@@ -1,13 +1,50 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/button";
 import { ArrowLeft, PlusCircle, Printer } from "lucide-react";
 import AttendanceTable from "../../components/custom component/AttendanceTable";
 import { Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import AddAttendance from "../../components/custom component/AddAttendance";
 
 export default function ClassDetails() {
+  const {id} = useParams()
   const [close, setClose] = useState(false);
+  const [courseData, SetCourseData] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const fetchClassData = async() =>{
+    try {
+      setLoading(true);
+      const fetching = await fetch(`http://localhost:4000/api/classes/${id}`, {
+        method: "GET",
+        headers: {
+          "content-type": "application/json",
+        },
+      });
+      const response = await fetching.json();
+      SetCourseData(response);
+      console.log(courseData);
+      if (!fetching.ok) {
+        setError(true);
+        return;
+      }
+      setLoading(false);
+    } catch (error) {
+      console.log(error.message);
+      setLoading(false);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+  // fetch course data when page mounts
+  useEffect(() => {
+    fetchClassData()
+  }, [])
+  
+  
   return (
     <div className="relative">
       {" "}
@@ -24,11 +61,11 @@ export default function ClassDetails() {
             </div>
             <div className="w-full">
               <h1 className="font-semibold text-2xl text-center">
-                Attendance Sheet for :: <b>{"CEC 418"}</b>
+                Attendance Sheet for :: <b>{courseData.className}</b>
               </h1>
               <p className="text-center">
                 {" "}
-                <p>Mr.Kometa Dennis</p>
+                <p>{courseData.createdBy}</p>
               </p>
             </div>
             <div className="w-full flex flex-col items-end">
@@ -55,10 +92,10 @@ export default function ClassDetails() {
               </div>
               <div className="flex gap-5">
                 <p>
-                  Date/Time: <b>{"12-02-2025 15:30"}</b>
+                  Date/Time: <b>{courseData.createdAt}</b>
                 </p>
                 <p>
-                  Attendance Count: <b>{"50"}</b>
+                  Attendance Count: <b>{courseData.attendees?.length}</b>
                 </p>
               </div>
             </div>
@@ -77,7 +114,13 @@ export default function ClassDetails() {
           <p>Created At</p>
           <p>Operations</p>
         </Card>
-        <AttendanceTable />
+        {courseData.attendees?.length == 0 ? (
+          <p className="text-center mt-5">No attendees yet</p>
+        ) : courseData.attendees ? (
+          <AttendanceTable students={courseData?.attendees} />
+        ) : (
+          <p>Nothing to show</p>
+        )}
       </div>
       <AddAttendance
         close={close}
