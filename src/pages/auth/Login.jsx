@@ -9,13 +9,47 @@ import {
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/button";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const router = useNavigate()
+    const [error, setError] = useState(false);
+  // state to hold all the user data
+  const [userdata, setUserDdata] = useState({
+    "username": "",
+    "password": ""
+  })
+  const [Loading, setLoading] = useState(false)
 
+  // function to handel submit
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      setLoading(true)
+      const fetching = await fetch("http://localhost:4000/api/students/login", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(userdata),
+      });
 
-  const [error] = useState(null);
-
-
+      console.log(JSON.stringify(userdata));
+      const response = await fetching.json();
+       console.log(response);
+      if (!fetching.ok) {
+        setError(true)
+        return;
+      }
+      router("/dashboard");
+      setLoading(false);
+    } catch (error) {
+      console.log(error.message);
+      setLoading(false);
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="flex flex-col justify-center items-center h-screen">
@@ -29,7 +63,7 @@ export default function Login() {
           SAMS
         </abbr>
       </h1>
-      <form action="">
+      <form onSubmit={handleSubmit}>
         <Card className={"w-[27em]"}>
           <CardHeader>
             <CardTitle className={"text-2xl font-bold"}>Log in</CardTitle>
@@ -40,8 +74,19 @@ export default function Login() {
             )}
           </CardHeader>
           <CardContent className={"flex flex-col gap-5"}>
-            <Input placeholder="username" className={"py-6"} />
             <Input
+              placeholder="username"
+              value={userdata.username}
+              onChange={(e) => {
+                setUserDdata({ ...userdata, username: e.target.value });
+              }}
+              className={"py-6"}
+            />
+            <Input
+              onChange={(e) => {
+                setUserDdata({ ...userdata, password: e.target.value });
+              }}
+              value={userdata.password}
               placeholder="password"
               type={"password"}
               className={"py-6"}
@@ -54,7 +99,7 @@ export default function Login() {
                 "w-full cursor-pointer hover:bg-black hover:text-white"
               }
             >
-              Log In
+              {Loading ? "Loading....." : "Log In"}
             </Button>
             <Link to={"/signup"} className="py-4 hover:underline">
               Create an Account
