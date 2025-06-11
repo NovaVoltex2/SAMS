@@ -4,11 +4,30 @@ import ClassCard from "../../components/custom component/ClassCard";
 import AddCard from "../../components/custom component/AddCard";
 import { Input } from "../../components/ui/Input";
 import { Loading } from "../../components/Loading";
+import { useNavigate } from "react-router-dom";
+import { redirect } from "react-router-dom";
 
 export default function Dashboard() {
-  const [loading, setLoading] = useState(false)
-  const [courses, SetCourses] = useState([])
-  
+  const router = useNavigate();
+  const [currentUser, setCurrentUser] = useState(() =>
+    JSON.parse(localStorage.getItem("user"))
+  );
+
+  useEffect(() => {
+    try {
+      if (currentUser == null) {
+        redirect("/");
+        return;
+      }
+    } catch (error) {
+      console.log(error.message);
+      
+    }
+  }, [currentUser]);
+
+  const [loading, setLoading] = useState(false);
+  const [courses, SetCourses] = useState([]);
+
   // function to fetch all informations
   const fetchData = async () => {
     try {
@@ -17,10 +36,10 @@ export default function Dashboard() {
         method: "GET",
         headers: {
           "content-type": "application/json",
-        }
+        },
       });
       const response = await fetching.json();
-      SetCourses(response.classes)
+      SetCourses(response.classes);
       console.log(courses);
       if (!fetching.ok) {
         setError(true);
@@ -33,18 +52,17 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   // when the component mounts, fetch all the classes
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   if (loading) {
     return <Loading />;
   }
 
-  
   return (
     <div>
       <h2 className="font-semibold text-2xl px-5 sm:px-0">Basic Statistics</h2>
@@ -89,7 +107,7 @@ export default function Dashboard() {
         ) : (
           <p className="text-center col-span-full">No classes found.</p>
         )}
-        <AddCard />
+        {currentUser.isStudent == true? "" : (<AddCard />)}
       </div>
     </div>
   );

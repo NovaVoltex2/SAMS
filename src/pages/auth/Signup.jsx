@@ -21,27 +21,33 @@ export default function Signup() {
 })
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("")
-   const [Loading, setLoading] = useState(false);
+  const [Loading, setLoading] = useState(false);
+  const [accountType, setAccountType] = useState("students");
 
 // signup function
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      const fetching = await fetch("http://localhost:4000/api/students/", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
+      const fetching = await fetch(
+        `http://localhost:4000/api/${accountType}/`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(userData),
+        }
+      );
       const response = await fetching.json();
-      setErrorMessage(response)
+      setErrorMessage(response);
       if (!fetching.ok) {
         setError(true);
-        setErrorMessage("error fetching")
+        setErrorMessage("error fetching");
         return;
       }
+      // saving the user to localStorage
+      localStorage.setItem("user", JSON.stringify(response));
       router("/dashboard");
       setLoading(false);
     } catch (error) {
@@ -75,6 +81,17 @@ export default function Signup() {
             )}
           </CardHeader>
           <CardContent className={"flex flex-col gap-5"}>
+            {/* select account type */}
+            <select
+              className="border py-3 px-2 rounded-md"
+              onChange={(e) => {
+                setAccountType(e.target.value);
+              }}
+              required
+            >
+              <option value="students">Student</option>
+              <option value="lecturers">Lecturer</option>
+            </select>
             <Input
               placeholder="username"
               onChange={(e) => {
@@ -92,14 +109,19 @@ export default function Signup() {
               type={"email"}
               className={"py-6"}
             />
-            <Input
-              placeholder="Matricule"
-              onChange={(e) => {
-                setUserData({ ...userData, matricule: e.target.value });
-              }}
-              required
-              className={"py-6"}
-            />
+            {accountType == "students" ? (
+              <Input
+                placeholder="Matricule"
+                onChange={(e) => {
+                  setUserData({ ...userData, matricule: e.target.value });
+                }}
+                required
+                className={"py-6"}
+              />
+            ) : (
+              ""
+            )}
+
             <Input
               placeholder="password"
               onChange={(e) => {

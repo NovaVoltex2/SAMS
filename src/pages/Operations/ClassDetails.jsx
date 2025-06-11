@@ -12,6 +12,8 @@ export default function ClassDetails() {
   const [close, setClose] = useState(false);
   const [courseData, SetCourseData] = useState('');
   const [loading, setLoading] = useState(false);
+  const [attendee, setAttendee] = useState({ name: "", matricule: "" });
+
 
   const fetchClassData = async() =>{
     try {
@@ -117,12 +119,17 @@ export default function ClassDetails() {
         {courseData.attendees?.length == 0 ? (
           <p className="text-center mt-5">No attendees yet</p>
         ) : courseData.attendees ? (
-          <AttendanceTable students={courseData?.attendees} />
+          <AttendanceTable
+            students={courseData?.attendees}
+            id={courseData._id}
+          />
         ) : (
           <p>Nothing to show</p>
         )}
       </div>
       <AddAttendance
+        attendee={attendee}
+        classId={id}
         close={close}
         onClose={() => {
           setClose(!close);

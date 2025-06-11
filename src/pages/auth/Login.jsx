@@ -33,10 +33,9 @@ export default function Login() {
         },
         body: JSON.stringify(userdata),
       });
-
-      console.log(JSON.stringify(userdata));
       const response = await fetching.json();
-       console.log(response);
+      // saving the user to localStorage
+      localStorage.setItem("user", JSON.stringify(response));
       if (!fetching.ok) {
         setError(true)
         return;
